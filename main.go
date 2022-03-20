@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"time"
+	"github.com/eiannone/keyboard"
 )
 
 type QuizQuestion struct {
@@ -104,8 +105,18 @@ func main() {
 	var timerFlag = flag.Int("timer", defaultTime, "Time of the quiz. Default value is 30 seconds.")
 
 	flag.Parse()
+	
+	fmt.Println("========== Welcome Go Quiz Game =========")
+	fmt.Println("    Press Enter key to start the game    ")
+	fmt.Println("=========================================")
 
-	if fileExists(*fileFlag) {
+	_, key, err := keyboard.GetSingleKey()
+	
+	if err != nil {
+		panic(err)
+	}
+
+	if fileExists(*fileFlag) && key == keyboard.KeyEnter {
 		correctAnswers, wrongAnswers, remainingQuestions = quizGame(*fileFlag, *timerFlag)
 		fmt.Println("Quiz Stats")
 		fmt.Printf("Right answers: %v\n", correctAnswers)
