@@ -54,45 +54,61 @@ func readCsvFile(fileName string) []QuizQuestion {
 	return quizQuestions
 }
 
-func quizGame(csvFileName string) (uint, uint) {
-	questions := readCsvFile(csvFileName)
+func getUserInput(ch chan string, q QuizQuestion) {
+	answer := ""
+	fmt.Printf("What is %s equal to: ", q.question)
+	fmt.Scan(&answer)
 
+	ch <- answer
+}
+
+func quizGame(csvFileName string) (uint, uint, int) {
+	questions := readCsvFile(csvFileName)
+	ch := make(chan string, 1)
+	breakLoop := false
 	var correctAnswers uint = 0
 	var wrongAnswers uint = 0
-	answer := ""
-	start := time.Now()
-	duration := time.Since(start).Seconds()
+	var remainingQuestions int = len(questions)
 
-	for i := 0; i < len(questions) && duration <= 10; i++ {
+	for i := 0; i < len(questions) && !breakLoop; i++ {
 		q := questions[i]
-		fmt.Printf("What is %s equal to: ", q.question)
-		fmt.Scan(&answer)
 
-		if answer != q.answer {
-			wrongAnswers++
-		} else {
-			correctAnswers++
+		go getUserInput(ch, q)
+
+		select {
+		case answer := <-ch:
+			fmt.Printf("Your answer: %s\n", answer)
+			if answer != q.answer {
+				wrongAnswers++
+			} else {
+				correctAnswers++
+			}
+			remainingQuestions -= 1
+		case <-time.After(10 * time.Second):
+			fmt.Println("Time complete.")
+			breakLoop = true
 		}
-
-		duration = time.Since(start).Seconds() // need to execute this in parallel with the quiz.
 	}
 
-	return correctAnswers, correctAnswers
+	return correctAnswers, wrongAnswers, remainingQuestions
 }
 
 func main() {
 	var defaultFile string = "problems.csv"
-	// var defaultTimer int = 5
 	var correctAnswers uint = 0
 	var wrongAnswers uint = 0
+	var remainingQuestions int = 0
 	var fileFlag = flag.String("file-name", defaultFile, "Name of the CSV file. Default is "+defaultFile)
-	// var timerFlag = flag.Int("timer", defaultTimer, "Duration of quiz in seconds. Default value is "+strconv.Itoa(defaultTimer))
 
 	flag.Parse()
 
 	if fileExists(*fileFlag) {
-		correctAnswers, wrongAnswers = quizGame(*fileFlag)
-		fmt.Printf("You answered %v correct answers & %v wrong answers\n", correctAnswers, wrongAnswers)
+		correctAnswers, wrongAnswers, remainingQuestions = quizGame(*fileFlag)
+		fmt.Println("Quiz Stats")
+		fmt.Printf("Right answers: %v\n", correctAnswers)
+		fmt.Printf("Wrong answers: %v\n", wrongAnswers)
+		fmt.Printf("Not answered: %v\n", remainingQuestions)
+		
 	} else {
 		fmt.Println("File doesn't exists")
 	}
