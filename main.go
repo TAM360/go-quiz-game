@@ -90,6 +90,7 @@ func quizGame(csvFileName string, quizTime int) (uint, uint, int) {
 		}
 	}
 
+	close(ch)
 	return correctAnswers, wrongAnswers, remainingQuestions
 }
 
