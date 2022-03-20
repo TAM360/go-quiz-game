@@ -8,6 +8,7 @@ import (
 	"os"
 	"time"
 	"github.com/eiannone/keyboard"
+	"math/rand"
 )
 
 type QuizQuestion struct {
@@ -21,7 +22,7 @@ func fileExists(fileName string) bool {
 	return err == nil
 }
 
-func readCsvFile(fileName string) []QuizQuestion {
+func readCsvFile(fileName string, shuffle bool) []QuizQuestion {
 	file, fileError := os.Open(fileName)
 	quizQuestions := make([]QuizQuestion, 0)
 
@@ -52,6 +53,14 @@ func readCsvFile(fileName string) []QuizQuestion {
 
 	}
 
+	if shuffle {
+		fmt.Println("Shuffling the list of questions")
+
+		rand.Shuffle(len(quizQuestions), func(i int, j int) {
+				quizQuestions[i], quizQuestions[j] = quizQuestions[j], quizQuestions[i]
+		})
+	}
+
 	return quizQuestions
 }
 
@@ -63,10 +72,11 @@ func getUserInput(ch chan string, q QuizQuestion) {
 	ch <- answer
 }
 
-func quizGame(csvFileName string, quizTime int) (uint, uint, int) {
-	questions := readCsvFile(csvFileName)
+func quizGame(csvFileName string, quizTime int, shuffle bool) (uint, uint, int) {
+	questions := readCsvFile(csvFileName, shuffle)
 	ch := make(chan string, 1)
 	breakLoop := false
+
 	var correctAnswers uint = 0
 	var wrongAnswers uint = 0
 	var remainingQuestions int = len(questions)
@@ -103,6 +113,7 @@ func main() {
 	var remainingQuestions int = 0
 	var fileFlag = flag.String("file-name", defaultFile, "Name of the CSV file. Default is "+defaultFile+".")
 	var timerFlag = flag.Int("timer", defaultTime, "Time of the quiz. Default value is 30 seconds.")
+	var shuffleFlag = flag.Bool("shuffle", false, "Shuffle the quiz questions.")
 
 	flag.Parse()
 	
@@ -117,7 +128,7 @@ func main() {
 	}
 
 	if fileExists(*fileFlag) && key == keyboard.KeyEnter {
-		correctAnswers, wrongAnswers, remainingQuestions = quizGame(*fileFlag, *timerFlag)
+		correctAnswers, wrongAnswers, remainingQuestions = quizGame(*fileFlag, *timerFlag, *shuffleFlag)
 		fmt.Println("========== Quiz Stats =========")
 		fmt.Printf("Right answers: %v\n", correctAnswers)
 		fmt.Printf("Wrong answers: %v\n", wrongAnswers)
