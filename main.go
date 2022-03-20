@@ -118,7 +118,7 @@ func main() {
 
 	if fileExists(*fileFlag) && key == keyboard.KeyEnter {
 		correctAnswers, wrongAnswers, remainingQuestions = quizGame(*fileFlag, *timerFlag)
-		fmt.Println("Quiz Stats")
+		fmt.Println("========== Quiz Stats =========")
 		fmt.Printf("Right answers: %v\n", correctAnswers)
 		fmt.Printf("Wrong answers: %v\n", wrongAnswers)
 		fmt.Printf("Not answered: %v\n", remainingQuestions)
