@@ -4,11 +4,11 @@ import (
 	"encoding/csv"
 	"flag"
 	"fmt"
+	"github.com/eiannone/keyboard"
 	"io"
+	"math/rand"
 	"os"
 	"time"
-	"github.com/eiannone/keyboard"
-	"math/rand"
 )
 
 type QuizQuestion struct {
@@ -57,7 +57,7 @@ func readCsvFile(fileName string, shuffle bool) []QuizQuestion {
 		fmt.Println("Shuffling the list of questions")
 
 		rand.Shuffle(len(quizQuestions), func(i int, j int) {
-				quizQuestions[i], quizQuestions[j] = quizQuestions[j], quizQuestions[i]
+			quizQuestions[i], quizQuestions[j] = quizQuestions[j], quizQuestions[i]
 		})
 	}
 
@@ -116,13 +116,13 @@ func main() {
 	var shuffleFlag = flag.Bool("shuffle", false, "Shuffle the quiz questions.")
 
 	flag.Parse()
-	
+
 	fmt.Println("========== Welcome Go Quiz Game =========")
 	fmt.Println("    Press Enter key to start the game    ")
 	fmt.Println("=========================================")
 
 	_, key, err := keyboard.GetSingleKey()
-	
+
 	if err != nil {
 		panic(err)
 	}
